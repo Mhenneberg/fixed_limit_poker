@@ -7,7 +7,7 @@ from environment.Constants import Action
 from environment.Observation import Observation
 
 # your bot class, rename to match the file name
-class TemplateBot(BotInterface):
+class Tubot(BotInterface):
 
     # change the name of your bot here
     def __init__(self, name="Tubot"):

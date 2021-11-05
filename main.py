@@ -11,7 +11,7 @@ def debug():
     env = FixedLimitPoker([
         # Change the bots here to change the participants
         PercentBot(),
-        TemplateBot()
+        Tubot()
     ], observers=observers, punishSlowBots=False)
     env.reset()
     env.reset(rotatePlayers=True)
@@ -21,7 +21,8 @@ def benchmark():
     bots = [
         # Change the bots here to change the participants
         CounterBot(),
-        PercentBot(),
+        Tubot()
+        #PercentBot(),
         # TemplateBot(),
     ]
     combinations = list(itertools.combinations(bots, 2))
