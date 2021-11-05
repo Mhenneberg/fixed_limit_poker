@@ -22,8 +22,7 @@ def benchmark():
         # Change the bots here to change the participants
         Tubot(),
         PercentBot(),
-        #TemplateBot(),
-        #CounterBot()
+        # TemplateBot(),
     ]
     combinations = list(itertools.combinations(bots, 2))
     roundsPerPair = 1000
