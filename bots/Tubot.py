@@ -10,7 +10,7 @@ from environment.Observation import Observation
 class TemplateBot(BotInterface):
 
     # change the name of your bot here
-    def __init__(self, name="Marvin"):
+    def __init__(self, name="Tubot"):
         '''init function'''
         super().__init__(name=name)
 
