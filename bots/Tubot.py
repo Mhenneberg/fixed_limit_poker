@@ -38,6 +38,13 @@ class Tubot(BotInterface):
         handPercent, cards = getHandPercent(observation.myHand,observation.boardCards)
         handType, bestCards = getHandType(observation.myHand, observation.boardCards)
         boardType = getBoardHandType(observation.boardCards)
+        longestStraight = getLongestStraight(observation.myHand, observation.boardCards)
+
+        if (handType == HandType.STRAIGHTFLUSH):
+            return Action.RAISE
+
+        if (handType == HandType.STRAIGHT):
+            return Action.RAISE
 
         if handPercent <= .3:
             return Action.RAISE
