@@ -43,39 +43,48 @@ class Tubot(BotInterface):
         boardType = getBoardHandType(observation.boardCards)
         longestStraight = getLongestStraight(observation.myHand, observation.boardCards)
 
+
         opponentActions = observation.get_opponent_history_current_stage()
 
+        opponentRaiseFactor = opponentActions.count(Action.RAISE)/100
 
+        opponent_actions_this_round = observation.get_opponent_history_current_stage()
 
-        if (handType == HandType.STRAIGHTFLUSH):
+        def goodHandFactor(self, observation: Observation) -> float:
+
+            result = 1
+            if (handType == HandType.STRAIGHTFLUSH):
+                result*=1
+
+            if (handType == HandType.STRAIGHT):
+                result*=1
+
+            if handType == HandType.FLUSH:
+                result*=1
+
+            if handType == HandType.THREEOFAKIND:
+                result*=0.9
+
+            if handType == HandType.FULLHOUSE:
+                result*=0.9
+
+                result*=-(0-handPercent)
+            return result
+
+        if (self.goodHandFactor(observation) - opponentRaiseFactor > 0.7):
             return Action.RAISE
-
-        if (handType == HandType.STRAIGHT):
-            return Action.RAISE
-
-        if handType == HandType.THREEOFAKIND and boardType != handType.THREEOFAKIND:
-            return Action.RAISE
-
-        if handType == HandType.FLUSH:
-            return Action.RAISE
-
-        if handType == HandType.FULLHOUSE and boardType != handType.FULLHOUSE:
-            return Action.RAISE
-
-        #if handType == HandType.TWOPAIR and boardType != HandType.TWOPAIR: 
-            #return Action.CALL
-
-        if len(opponentActions) > 1 and opponentActions[0] == Action.RAISE and handPercent >= 0.4:
-            return Action.FOLD
-
-        if len(opponentActions) > 2 and opponentActions[0] == Action.RAISE and opponentActions[1] == Action.RAISE:
-            return Action.FOLD
-
-        if handPercent <= .3:
-            return Action.RAISE
-        elif handPercent <= .8:
+        elif (self.goodHandFactor(observation) - opponentRaiseFactor > 0.5):
+            return Action.CALL
+        elif (self.goodHandFactor(observation) - opponentRaiseFactor > 0.3):
             return Action.CHECK
-        return Action.FOLD
+        elif (self.goodHandFactor(observation) - opponentRaiseFactor < 0.3):
+            return Action.FOLD
+
+    def checkIfBadHand(self, observation: Observation) -> bool:
+        handPercent, cards = getHandPercent(observation.myHand,observation.boardCards)
+        handType, bestCards = getHandType(observation.myHand, observation.boardCards)
+        if handType not in [HandType.FLUSH, HandType.FOUROFAKIND]:
+            return True
 
     def checkIfBadHand(self, observation: Observation) -> bool:
         handPercent, cards = getHandPercent(observation.myHand,observation.boardCards)

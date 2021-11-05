@@ -23,6 +23,8 @@ def benchmark():
         Tubot(),
         PercentBot(),
         # TemplateBot(),
+        #TemplateBot(),
+        CounterBot()
     ]
     combinations = list(itertools.combinations(bots, 2))
     roundsPerPair = 1000
