@@ -43,7 +43,7 @@ class Tubot(BotInterface):
         boardType = getBoardHandType(observation.boardCards)
         longestStraight = getLongestStraight(observation.myHand, observation.boardCards)
 
-        opponentAction = observation.get_opponent_history_current_stage()
+        opponentActions = observation.get_opponent_history_current_stage()
 
 
 
@@ -65,7 +65,10 @@ class Tubot(BotInterface):
         #if handType == HandType.TWOPAIR and boardType != HandType.TWOPAIR: 
             #return Action.CALL
 
-        if opponentAction == Action.RAISE and handPercent >= 0.8:
+        if len(opponentActions) > 1 and opponentActions[0] == Action.RAISE and handPercent >= 0.4:
+            return Action.FOLD
+
+        if len(opponentActions) > 2 and opponentActions[0] == Action.RAISE and handPercent >= 0.4:
             return Action.FOLD
 
         if handPercent <= .3:
@@ -73,6 +76,12 @@ class Tubot(BotInterface):
         elif handPercent <= .8:
             return Action.CHECK
         return Action.FOLD
+
+    def checkIfBadHand(self, observation: Observation) -> bool:
+        handPercent, cards = getHandPercent(observation.myHand,observation.boardCards)
+        handType, bestCards = getHandType(observation.myHand, observation.boardCards)
+        if handType not in [HandType.FLUSH, HandType.FOUROFAKIND]:
+            return True
 
     def handleRiver(self, observation: Observation, action_space:Sequence[Action]) -> Action:
         handPercent, cards = getHandPercent(observation.myHand,observation.boardCards)
