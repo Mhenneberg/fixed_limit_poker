@@ -49,36 +49,37 @@ class Tubot(BotInterface):
         opponentRaiseFactor = opponentActions.count(Action.RAISE)/100
 
         opponent_actions_this_round = observation.get_opponent_history_current_stage()
-
-        def goodHandFactor(self, observation: Observation) -> float:
-
-            result = 1
-            if (handType == HandType.STRAIGHTFLUSH):
-                result*=1
-
-            if (handType == HandType.STRAIGHT):
-                result*=1
-
-            if handType == HandType.FLUSH:
-                result*=1
-
-            if handType == HandType.THREEOFAKIND:
-                result*=0.9
-
-            if handType == HandType.FULLHOUSE:
-                result*=0.9
-
-                result*=-(0-handPercent)
-            return result
-
-        if (self.goodHandFactor(observation) - opponentRaiseFactor > 0.7):
+        if (self.goodHandFactor(observation,handType, handPercent) - opponentRaiseFactor > 0.7):
             return Action.RAISE
-        elif (self.goodHandFactor(observation) - opponentRaiseFactor > 0.5):
+        elif (self.goodHandFactor(observation, handType, handPercent) - opponentRaiseFactor > 0.5):
             return Action.CALL
-        elif (self.goodHandFactor(observation) - opponentRaiseFactor > 0.3):
+        elif (self.goodHandFactor(observation, handType, handPercent) - opponentRaiseFactor > 0.3):
             return Action.CHECK
-        elif (self.goodHandFactor(observation) - opponentRaiseFactor < 0.3):
+        elif (self.goodHandFactor(observation, handType, handPercent) - opponentRaiseFactor < 0.3):
             return Action.FOLD
+
+    def goodHandFactor(self, observation: Observation, handType, handPercent) -> float:
+
+        result = 1
+        if (handType == HandType.STRAIGHTFLUSH):
+            result*=1
+
+        if (handType == HandType.STRAIGHT):
+            result*=1
+
+        if handType == HandType.FLUSH:
+            result*=1
+
+        if handType == HandType.THREEOFAKIND:
+            result*=0.9
+
+        if handType == HandType.FULLHOUSE:
+            result*=0.9
+
+            result*=-(0-handPercent)
+        return result
+
+        
 
     def checkIfBadHand(self, observation: Observation) -> bool:
         handPercent, cards = getHandPercent(observation.myHand,observation.boardCards)
