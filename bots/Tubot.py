@@ -5,6 +5,8 @@ from environment.Constants import Action, Stage
 from bots.BotInterface import BotInterface
 from environment.Constants import Action
 from environment.Observation import Observation
+from environment.Player import Player
+from environment.PlayerObservation import PlayerObservation
 from utils import handValue
 from utils.createHandRankings import *
 from utils.deuces import *
@@ -28,9 +30,10 @@ class Tubot(BotInterface):
                     action (Action): the action you want you bot to take. Possible actions are: FOLD, CHECK, CALL and RAISE
             If this function takes longer than 1 second, your bot will fold
         '''
-
         if observation.stage == Stage.PREFLOP:
             return self.handlePreFlop(observation, action_space)
+        #elif observation.stage == Stage.RIVER:
+            #return self.handleRiver(observation, action_space)
         else:
             return self.handlePostFlop(observation, action_space)
 
@@ -39,6 +42,9 @@ class Tubot(BotInterface):
         handType, bestCards = getHandType(observation.myHand, observation.boardCards)
         boardType = getBoardHandType(observation.boardCards)
         longestStraight = getLongestStraight(observation.myHand, observation.boardCards)
+
+        opponentAction = observation.get_opponent_history_current_stage()
+
 
 
         if (handType == HandType.STRAIGHTFLUSH):
@@ -49,6 +55,49 @@ class Tubot(BotInterface):
 
         if handType == HandType.THREEOFAKIND and boardType != handType.THREEOFAKIND:
             return Action.RAISE
+
+        if handType == HandType.FLUSH:
+            return Action.RAISE
+
+        if handType == HandType.FULLHOUSE and boardType != handType.FULLHOUSE:
+            return Action.RAISE
+
+        #if handType == HandType.TWOPAIR and boardType != HandType.TWOPAIR: 
+            #return Action.CALL
+
+        if opponentAction == Action.RAISE and handPercent >= 0.8:
+            return Action.FOLD
+
+        if handPercent <= .3:
+            return Action.RAISE
+        elif handPercent <= .8:
+            return Action.CHECK
+        return Action.FOLD
+
+    def handleRiver(self, observation: Observation, action_space:Sequence[Action]) -> Action:
+        handPercent, cards = getHandPercent(observation.myHand,observation.boardCards)
+        handType, bestCards = getHandType(observation.myHand, observation.boardCards)
+        boardType = getBoardHandType(observation.boardCards)
+        longestStraight = getLongestStraight(observation.myHand, observation.boardCards)
+
+        #if (handPercent > 0.8):
+            #return Action.FOLD
+
+        if (handType == HandType.STRAIGHTFLUSH):
+            return Action.RAISE
+
+        if (handType == HandType.STRAIGHT):
+            return Action.RAISE
+
+        if handType == HandType.THREEOFAKIND and boardType != handType.THREEOFAKIND:
+            return Action.RAISE
+
+        if handType == HandType.FLUSH:
+            return Action.RAISE
+
+        #if handType == HandType.FULLHOUSE:
+        #    return Action.RAISE
+
 
         if handPercent <= .3:
             return Action.RAISE
@@ -61,12 +110,13 @@ class Tubot(BotInterface):
         return Action.FOLD
 
 
+
     def handlePreFlop(self, observation: Observation, action_space:Sequence[Action]) -> Action:
         handPercent, cards = getHandPercent(observation.myHand,observation.boardCards)
         handType, bestCards = getHandType(observation.myHand, observation.boardCards)
         boardType = getBoardHandType(observation.boardCards)
-        if (handType == HandType.TWOPAIR): 
-            return Action.RAISE
+        if (handType == HandType.PAIR): 
+            return Action.CALL
         elif handPercent > 0.8:
             return Action.FOLD
         else: 
