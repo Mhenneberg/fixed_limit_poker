@@ -46,10 +46,10 @@ class Tubot(BotInterface):
                 action = Action.CALL
         elif (handPercent <= .3):
             action = Action.RAISE
-        elif (handPercent > .3):
-            action = Action.FOLD
-        else:
+        elif (handPercent < .6):
             action = Action.CALL
+        else:
+            action = Action.FOLD
         return action
 
     def handlePreFlop(self, observation: Observation, action_space:Sequence[Action]) -> Action:
@@ -63,8 +63,8 @@ class Tubot(BotInterface):
                 action = Action.CALL
         elif (handPercent <= .3):
             action = Action.RAISE
-        elif (handPercent > .3):
-            action = Action.FOLD
-        else:
+        elif (handPercent < .6):
             action = Action.CALL
+        else:
+            action = Action.FOLD
         return action
