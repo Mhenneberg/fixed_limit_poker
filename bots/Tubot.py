@@ -29,42 +29,40 @@ class Tubot(BotInterface):
             If this function takes longer than 1 second, your bot will fold
         '''
 
-        if (observation.stage == Stage.PREFLOP):
+        if observation.stage == Stage.PREFLOP:
             return self.handlePreFlop(observation, action_space)
         else:
-            return self
+            return self.handlePostFlop(observation, action_space)
 
     def handlePostFlop(self, observation: Observation, action_space:Sequence[Action]) -> Action:
-        handPercent = getHandPercent(observation.myHand,observation.boardCards)
-        handType = getHandType(observation.myHand, observation.boardCards)
+        handPercent, cards = getHandPercent(observation.myHand,observation.boardCards)
+        handType, bestCards = getHandType(observation.myHand, observation.boardCards)
         boardType = getBoardHandType(observation.boardCards)
-        
-        if (handType == HandType.TWOPAIR and boardType != HandType.TWOPAIR): 
-            if (Action.RAISE in action_space):
-                action = Action.RAISE
-            else:
-                action = Action.CALL
-        elif (handPercent <= .3):
-            action = Action.RAISE
-        elif (handPercent < .6):
-            action = Action.CALL
-        else:
-            action = Action.FOLD
-        return action
+
+        if handPercent <= .3:
+            return Action.RAISE
+        elif handPercent <= .8:
+            return Action.CALL
+
+        if handType == HandType.TWOPAIR and boardType != HandType.TWOPAIR: 
+            return Action.CALL
+
+        return Action.FOLD
+
 
     def handlePreFlop(self, observation: Observation, action_space:Sequence[Action]) -> Action:
         handPercent, cards = getHandPercent(observation.myHand,observation.boardCards)
-        handType = getHandType(observation.myHand, observation.boardCards)
+        handType, bestCards = getHandType(observation.myHand, observation.boardCards)
         boardType = getBoardHandType(observation.boardCards)
-        if (handType == HandType.TWOPAIR and boardType != HandType.TWOPAIR): 
-            if (Action.RAISE in action_space):
-                action = Action.RAISE
-            else:
-                action = Action.CALL
-        elif (handPercent <= .3):
-            action = Action.RAISE
-        elif (handPercent < .6):
-            action = Action.CALL
-        else:
-            action = Action.FOLD
-        return action
+        if (handType == HandType.TWOPAIR): 
+            return Action.RAISE
+        elif handPercent > 0.8:
+            return Action.FOLD
+        else: 
+            return Action.CALL
+        #elif handPercent <= .30:
+        #    action = Action.RAISE
+        #elif handPercent <= .80:
+        #    action = Action.CALL
+        #else:
+        #    action = Action.FOLD
