@@ -40,81 +40,92 @@ class Tubot(BotInterface):
     def handlePostFlop(self, observation: Observation, action_space:Sequence[Action]) -> Action:
         handPercent, cards = getHandPercent(observation.myHand,observation.boardCards)
         handType, bestCards = getHandType(observation.myHand, observation.boardCards)
+        ownHandonly, ownHandBestCards = getHandType(observation.myHand)
         boardType = getBoardHandType(observation.boardCards)
         longestStraight = getLongestStraight(observation.myHand, observation.boardCards)
 
         opponentActions = observation.get_opponent_history_current_stage()
 
+        opponent_actions_this_round = observation.get_opponent_history_current_stage()
+        # Get the last action the opponent have done
+        last_action = opponent_actions_this_round[-1] if len(
+            opponent_actions_this_round) > 0 else None
 
-
-        if (handType == HandType.STRAIGHTFLUSH):
+        if last_action is None:
+            # opponent didn't do anything yet for us to counter, just raise
             return Action.RAISE
+        elif last_action in [Action.CHECK, Action.CALL]:
+            # opponent checked, try to steal the pot with a raise
 
-        if (handType == HandType.STRAIGHT):
-            return Action.RAISE
+            if (handType == HandType.STRAIGHTFLUSH):
+                return Action.RAISE
 
-        if handType == HandType.THREEOFAKIND and boardType != handType.THREEOFAKIND:
-            return Action.RAISE
+            if (handType == HandType.STRAIGHT):
+                return Action.RAISE
 
-        if handType == HandType.FLUSH:
-            return Action.RAISE
+            if handType == HandType.THREEOFAKIND and boardType != handType.THREEOFAKIND:
+                return Action.RAISE
 
-        if handType == HandType.FULLHOUSE and boardType != handType.FULLHOUSE:
-            return Action.RAISE
+            if handType == HandType.FLUSH:
+                return Action.RAISE
 
-        #if handType == HandType.TWOPAIR and boardType != HandType.TWOPAIR: 
-            #return Action.CALL
+            if handType == HandType.FULLHOUSE and boardType != handType.FULLHOUSE:
+                return Action.RAISE
 
-        if len(opponentActions) > 1 and opponentActions[0] == Action.RAISE and handPercent >= 0.4:
+            #if handType == HandType.TWOPAIR and boardType != HandType.TWOPAIR: 
+                #return Action.CALL
+
+            if len(opponentActions) > 1 and opponentActions[0] == Action.RAISE and handPercent >= 0.8:
+                return Action.FOLD
+
+            if len(opponentActions) > 2 and opponentActions[0] == Action.RAISE and opponentActions[1] == Action.RAISE and handPercent >= 0.6:
+                return Action.FOLD
+
+            if handPercent <= .3:
+                return Action.RAISE
+            elif handPercent <= .8:
+                return Action.CHECK
             return Action.FOLD
 
-        if len(opponentActions) > 2 and opponentActions[0] == Action.RAISE and opponentActions[1] == Action.RAISE:
-            return Action.FOLD
+        def checkIfBadHand(self, observation: Observation) -> bool:
+            handPercent, cards = getHandPercent(observation.myHand,observation.boardCards)
+            handType, bestCards = getHandType(observation.myHand, observation.boardCards)
+            if handType not in [HandType.FLUSH, HandType.FOUROFAKIND]:
+                return True
 
-        if handPercent <= .3:
-            return Action.RAISE
-        elif handPercent <= .8:
-            return Action.CHECK
-        return Action.FOLD
+        def handleRiver(self, observation: Observation, action_space:Sequence[Action]) -> Action:
+            handPercent, cards = getHandPercent(observation.myHand,observation.boardCards)
+            handType, bestCards = getHandType(observation.myHand, observation.boardCards)
+            boardType = getBoardHandType(observation.boardCards)
+            longestStraight = getLongestStraight(observation.myHand, observation.boardCards)
 
-    def checkIfBadHand(self, observation: Observation) -> bool:
-        handPercent, cards = getHandPercent(observation.myHand,observation.boardCards)
-        handType, bestCards = getHandType(observation.myHand, observation.boardCards)
-        if handType not in [HandType.FLUSH, HandType.FOUROFAKIND]:
-            return True
+            #if (handPercent > 0.8):
+                #return Action.FOLD
 
-    def handleRiver(self, observation: Observation, action_space:Sequence[Action]) -> Action:
-        handPercent, cards = getHandPercent(observation.myHand,observation.boardCards)
-        handType, bestCards = getHandType(observation.myHand, observation.boardCards)
-        boardType = getBoardHandType(observation.boardCards)
-        longestStraight = getLongestStraight(observation.myHand, observation.boardCards)
+            if (handType == HandType.STRAIGHTFLUSH):
+                return Action.RAISE
 
-        #if (handPercent > 0.8):
-            #return Action.FOLD
+            if (handType == HandType.STRAIGHT):
+                return Action.RAISE
 
-        if (handType == HandType.STRAIGHTFLUSH):
-            return Action.RAISE
+            if handType == HandType.THREEOFAKIND and boardType != handType.THREEOFAKIND:
+                return Action.RAISE
 
-        if (handType == HandType.STRAIGHT):
-            return Action.RAISE
+            if handType == HandType.FLUSH:
+                return Action.RAISE
 
-        if handType == HandType.THREEOFAKIND and boardType != handType.THREEOFAKIND:
-            return Action.RAISE
-
-        if handType == HandType.FLUSH:
-            return Action.RAISE
-
-        #if handType == HandType.FULLHOUSE:
-        #    return Action.RAISE
+            #if handType == HandType.FULLHOUSE:
+            #    return Action.RAISE
 
 
-        if handPercent <= .3:
-            return Action.RAISE
-        elif handPercent <= .8:
-            return Action.CALL
+            if handPercent <= .3:
+                return Action.RAISE
+            elif handPercent <= .8:
+                return Action.CALL
 
-        if handType == HandType.TWOPAIR and boardType != HandType.TWOPAIR: 
-            return Action.CALL
+            if handType == HandType.TWOPAIR and boardType != HandType.TWOPAIR: 
+                return Action.CALL
+
 
         return Action.FOLD
 
@@ -124,10 +135,10 @@ class Tubot(BotInterface):
         handPercent, cards = getHandPercent(observation.myHand,observation.boardCards)
         handType, bestCards = getHandType(observation.myHand, observation.boardCards)
         boardType = getBoardHandType(observation.boardCards)
-        if (handType == HandType.PAIR): 
+        if (handType == HandType.PAIR or handType == HandType.HIGHCARD): 
             return Action.CALL
-        elif handPercent > 0.8:
-            return Action.FOLD
+        #elif handPercent > 0.8:
+            #return Action.FOLD
         else: 
             return Action.CALL
         #elif handPercent <= .30:
