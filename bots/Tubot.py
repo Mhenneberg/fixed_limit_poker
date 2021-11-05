@@ -68,7 +68,7 @@ class Tubot(BotInterface):
         if len(opponentActions) > 1 and opponentActions[0] == Action.RAISE and handPercent >= 0.4:
             return Action.FOLD
 
-        if len(opponentActions) > 2 and opponentActions[0] == Action.RAISE and handPercent >= 0.4:
+        if len(opponentActions) > 2 and opponentActions[0] == Action.RAISE and opponentActions[1] == Action.RAISE:
             return Action.FOLD
 
         if handPercent <= .3:
