@@ -20,9 +20,8 @@ def debug():
 def benchmark():
     bots = [
         # Change the bots here to change the participants
-        CounterBot(),
-        Tubot()
-        #PercentBot(),
+        Tubot(),
+        PercentBot(),
         # TemplateBot(),
     ]
     combinations = list(itertools.combinations(bots, 2))
@@ -45,5 +44,5 @@ def benchmark():
     print(stats)
 
 
-# benchmark()
-debug()
+benchmark()
+# debug()
